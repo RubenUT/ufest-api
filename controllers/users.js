@@ -45,7 +45,7 @@ class UserController {
             const data = await UserModel.getById(id);
             res.status(200).json(data);
         } catch (e) {
-            res.status(400).json({ status: 'error', message: 'Error al obtener usuario' });
+            res.status(400).json({ status: 'error', message: 'Error al obtener usuario', message: e.message });
         }
     };
 

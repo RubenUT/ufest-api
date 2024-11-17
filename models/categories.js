@@ -4,7 +4,8 @@ import { ObjectId } from "mongodb";
 
 const categorySchema = Joi.object({
     name: Joi.string().required(),
-    products: Joi.array().items(Joi.string())
+    image: Joi.string(),
+    products: Joi.array().items(Joi.string().regex(/^[a-f\d]{24}$/i)).default([])
 });
 
 class CategoryModel{
@@ -29,26 +30,16 @@ class CategoryModel{
         if(error){
             throw new Error(`Informacion de categoria invalida: ${error.details[0].message}`);
         }
-
-        const colProducts = this.#getCollection();
-        return await colProducts.insertOne(value);
+        value.products = (value.products || []).map(id => new ObjectId(id));
+        const colCategories = this.#getCollection();
+        return await colCategories.insertOne(value);
     }
 
     async getProductsByCategoryId(categoryId) {
         const categoryCollection = this.#getCollection();
-    
+        
         const result = await categoryCollection.aggregate([
             { $match: { _id: new ObjectId(categoryId) } },
-            
-            { $addFields: {
-                products: {
-                    $map: {
-                        input: "$products",
-                        as: "productId",
-                        in: { $toObjectId: "$$productId" }
-                    }
-                }
-            }},
             
             { $lookup: {
                 from: 'products',
@@ -59,6 +50,12 @@ class CategoryModel{
         ]).toArray();
     
         return result[0]?.productDetails || [];
+    }
+
+    async update(id, category){
+        const colCategories = this.#getCollection();
+        return await colCategories.updateOne({_id: new ObjectId(id)}, {$set: category});
+
     }
 }
 

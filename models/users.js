@@ -8,6 +8,7 @@ const userSchema = Joi.object({
     name: Joi.string(),
     name: Joi.string().default(Joi.ref('email')),
     phone: Joi.string(),
+    products: Joi.array().items(Joi.string().required()).default([])
 });
 
 class UserModel {

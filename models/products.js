@@ -23,6 +23,15 @@ class ProductModel{
             .toArray();
     }
 
+    async search(query) {
+        const colProducts = this.#getCollection();
+        const products = await colProducts.find({
+            name: { $regex: query, $options: 'i' }
+        }).toArray();
+
+        return products;
+    }
+
     async getById(id){
         const colProducts = this.#getCollection();
         return await colProducts.findOne({ _id: new ObjectId(id)});
@@ -35,10 +44,16 @@ class ProductModel{
         }
     
         value.categoryId = new ObjectId(value.categoryId);
-        value.userId = new ObjectId(value.userId);
+        value.userId = new ObjectId(value.userId);  
     
         const colProducts = this.#getCollection();
-        return await colProducts.insertOne(value);
+        const result = await colProducts.insertOne(value);
+        if (result.insertedId) {
+            const createdProduct = await colProducts.findOne({ _id: result.insertedId });
+            return createdProduct;
+        } else {
+            throw new Error("Error al crear el producto");
+        }
     }
 
 }
