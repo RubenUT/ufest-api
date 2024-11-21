@@ -36,6 +36,11 @@ class ProductModel{
         const colProducts = this.#getCollection();
         return await colProducts.findOne({ _id: new ObjectId(id)});
     }
+
+    async getByUserId(userId) {
+        const colProducts = this.#getCollection();
+        return await colProducts.find({ userId: new ObjectId(userId) }).toArray();
+    }
     
     async create(product) {
         const { error, value } = productSchema.validate(product);
@@ -56,6 +61,10 @@ class ProductModel{
         }
     }
 
+    async update(id, product){
+        const colProducts = this.#getCollection();
+        return await colProducts.updateOne({ _id: new ObjectId(id)}, { $set: product });
+    }
 }
 
 export default new ProductModel();

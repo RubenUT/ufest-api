@@ -8,6 +8,8 @@ const userSchema = Joi.object({
     name: Joi.string(),
     name: Joi.string().default(Joi.ref('email')),
     phone: Joi.string(),
+    description: Joi.string(),
+    image: Joi.string().allow(null, ''),
     products: Joi.array().items(Joi.string().required()).default([])
 });
 
@@ -22,6 +24,18 @@ class UserModel {
         return await colUsers.findOne({ email });
     }
 
+    async getAll() {
+        const colUsers = this.#getCollection();
+        return await colUsers.find({})
+            .limit(10)
+            .toArray();
+    }
+
+    async getById(id) {
+        const colUsers = this.#getCollection();
+        return await colUsers.findOne({ _id: new ObjectId(id) });
+    }
+    
     async create(user) {
         const { error, value } = userSchema.validate(user);
         if (error) {
@@ -35,18 +49,6 @@ class UserModel {
         }
 
         return await colUsers.insertOne(value);
-    }
-
-    async getAll() {
-        const colUsers = this.#getCollection();
-        return await colUsers.find({})
-            .limit(10)
-            .toArray();
-    }
-
-    async getById(id) {
-        const colUsers = this.#getCollection();
-        return await colUsers.findOne({ _id: new ObjectId(id) });
     }
 
     async update(id, user) {

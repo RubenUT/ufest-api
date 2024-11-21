@@ -1,4 +1,5 @@
 import UserModel from '../models/users.js';
+import ProductModel from '../models/products.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -39,26 +40,64 @@ class UserController {
         }
     };
 
-    async getById(req, res) {
+    async getProfile(req, res) {
+        try {
+            const _id = req.userId;
+            const user = await UserModel.getById(_id);
+            if (!user) {
+                return res.status(404).json({ message: "Usuario no encontrado" });
+            }
+            res.status(200).json({ data: user });
+        } catch (error) {
+            res.status(500).json({ message: "Error al obtener perfil del usuario", message: e.message });
+        }
+    }
+
+    async getUserById(req, res) {
         try {
             const { id } = req.params;
-            const data = await UserModel.getById(id);
-            res.status(200).json(data);
-        } catch (e) {
-            res.status(400).json({ status: 'error', message: 'Error al obtener usuario', message: e.message });
+    
+            if (!id) {
+                return res.status(400).json({ message: "Se requiere un ID válido." });
+            }
+    
+            const user = await UserModel.getById(id);
+    
+            if (!user) {
+                return res.status(404).json({ message: "Usuario no encontrado." });
+            }
+    
+            res.status(200).json({ data: user });
+        } catch (error) {
+            res.status(500).json({ message: "Error al obtener el usuario.", error: error.message });
         }
-    };
+    }
+
+    async getUserProducts(req, res) {
+        try {
+            const { id } = req.params;
+            const products = await ProductModel.getByUserId(id);
+
+            if (!products || products.length === 0) {
+                return res.status(404).json({ message: "No se encontraron productos para este usuario" });
+            }
+
+            res.status(200).json({ data: products });
+        } catch (error) {
+            res.status(500).json({ message: "Error al obtener productos del usuario", error: error.message });
+        }
+    }
 
     async create(req, res) {
         try {
-            const { email, password, name, phone } = req.body;
+            const { email, password, name, phone, description, image } = req.body;
 
             if (!email || !password) {
                 return res.status(400).json({ status: 'error', message: 'Email y contraseña son requeridos' });
             }
 
             const hashedPassword = bcrypt.hashSync(password, 10);
-            const data = await UserModel.create({ email, password: hashedPassword, name, phone });
+            const data = await UserModel.create({ email, password: hashedPassword, name, phone, description, image });
             res.status(201).json({ status: 'success', data });
         } catch (e) {
             res.status(400).json({ status: 'error', message: 'Error al crear usuario' });

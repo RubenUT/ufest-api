@@ -1,5 +1,6 @@
 import express from 'express';
 import UserController from '../controllers/users.js';
+import authMiddleware from '../middlewares/authMiddleware.js';
 
 const route = express.Router();
 
@@ -7,7 +8,11 @@ route.get('/users', UserController.getAll);
 
 route.post('/login', UserController.login);
 
-route.get('/users/:id', UserController.getById);
+route.get('/users/me', authMiddleware, UserController.getProfile);
+
+route.get('/users/:id', authMiddleware, UserController.getUserById);
+
+route.get('/users/:id/products', authMiddleware, UserController.getUserProducts);
 
 route.post('/register', UserController.create);
 
