@@ -65,6 +65,15 @@ class ProductModel{
         const colProducts = this.#getCollection();
         return await colProducts.updateOne({ _id: new ObjectId(id)}, { $set: product });
     }
+
+    async delete(id) {
+        const colProducts = this.#getCollection();
+        const result = await colProducts.deleteOne({ _id: new ObjectId(id) });
+        if (result.deletedCount === 0) {
+            throw new Error("Producto no encontrado");
+        }
+        return { message: "Producto eliminado correctamente" };
+    }
 }
 
 export default new ProductModel();

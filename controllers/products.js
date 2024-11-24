@@ -93,6 +93,15 @@ class ProductController {
         }
     }
 
+    async delete(req, res) {
+        try {
+            const { id } = req.params;
+            const result = await ProductModel.delete(id);
+            res.status(200).json({ status: 'success', message: result.message });
+        } catch (e) {
+            res.status(400).json({ status: 'error', message: e.message });
+        }
+    }
 
 };
 
